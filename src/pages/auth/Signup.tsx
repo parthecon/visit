@@ -11,22 +11,69 @@ import { useToast } from '@/hooks/use-toast';
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    company: '',
+    phone: '',
+    companyEmail: '',
+    companyPhone: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      country: '',
+      zipCode: '',
+    },
+  });
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name.startsWith('address.')) {
+      setForm((prev) => ({
+        ...prev,
+        address: { ...prev.address, [name.replace('address.', '')]: value },
+      }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate signup process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Account created successfully",
-        description: "Welcome to Visitify! Let's set up your company.",
+    // Compose data for backend
+    const data = {
+      name: form.firstName + ' ' + form.lastName,
+      email: form.email,
+      password: form.password,
+      phone: form.phone,
+      companyName: form.company,
+      companyEmail: form.companyEmail || form.email,
+      companyPhone: form.companyPhone || form.phone,
+      address: form.address,
+    };
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-      navigate('/admin/dashboard');
-    }, 2000);
+      const result = await response.json();
+      if (response.ok) {
+        toast({ title: 'Account created successfully', description: "Welcome to Visitify! Let's set up your company." });
+        navigate('/admin/dashboard');
+      } else {
+        toast({ title: 'Registration failed', description: result.message || 'Please check your details.' });
+      }
+    } catch (err) {
+      toast({ title: 'Error', description: 'Could not connect to server.' });
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -57,71 +104,79 @@ const Signup = () => {
                   <Label htmlFor="firstName">First name</Label>
                   <Input
                     id="firstName"
+                    name="firstName"
                     type="text"
-                    placeholder="John"
+                    placeholder="Parth"
                     required
                     className="h-12"
+                    value={form.firstName}
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last name</Label>
                   <Input
                     id="lastName"
+                    name="lastName"
                     type="text"
-                    placeholder="Doe"
+                    placeholder=""
                     required
                     className="h-12"
+                    value={form.lastName}
+                    onChange={handleChange}
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email">Work email</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
-                  placeholder="john@company.com"
+                  placeholder="abc@company.com"
                   required
                   className="h-12"
+                  value={form.email}
+                  onChange={handleChange}
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="company">Company name</Label>
                 <Input
                   id="company"
+                  name="company"
                   type="text"
                   placeholder="Acme Corp"
                   required
                   className="h-12"
+                  value={form.company}
+                  onChange={handleChange}
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="role">Your role</Label>
-                <Select>
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Company Admin</SelectItem>
-                    <SelectItem value="hr">HR Manager</SelectItem>
-                    <SelectItem value="facilities">Facilities Manager</SelectItem>
-                    <SelectItem value="receptionist">Receptionist</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="text"
+                  placeholder="+91-9876543210"
+                  className="h-12"
+                  value={form.phone}
+                  onChange={handleChange}
+                />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Create a password"
                     required
                     className="h-12 pr-12"
+                    value={form.password}
+                    onChange={handleChange}
                   />
                   <button
                     type="button"
@@ -132,7 +187,76 @@ const Signup = () => {
                   </button>
                 </div>
               </div>
-
+              {/* Address fields */}
+              <div className="space-y-2">
+                <Label htmlFor="address.street">Street</Label>
+                <Input
+                  id="address.street"
+                  name="address.street"
+                  type="text"
+                  placeholder="123 Main St"
+                  required
+                  className="h-12"
+                  value={form.address.street}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="address.city">City</Label>
+                  <Input
+                    id="address.city"
+                    name="address.city"
+                    type="text"
+                    placeholder="City"
+                    required
+                    className="h-12"
+                    value={form.address.city}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address.state">State</Label>
+                  <Input
+                    id="address.state"
+                    name="address.state"
+                    type="text"
+                    placeholder="State"
+                    required
+                    className="h-12"
+                    value={form.address.state}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="address.country">Country</Label>
+                  <Input
+                    id="address.country"
+                    name="address.country"
+                    type="text"
+                    placeholder="Country"
+                    required
+                    className="h-12"
+                    value={form.address.country}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address.zipCode">Zip Code</Label>
+                  <Input
+                    id="address.zipCode"
+                    name="address.zipCode"
+                    type="text"
+                    placeholder="Zip Code"
+                    required
+                    className="h-12"
+                    value={form.address.zipCode}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
               <div className="flex items-start space-x-2">
                 <input
                   id="terms"
@@ -151,7 +275,6 @@ const Signup = () => {
                   </Link>
                 </Label>
               </div>
-
               <Button
                 type="submit"
                 className="w-full h-12 btn-hero"

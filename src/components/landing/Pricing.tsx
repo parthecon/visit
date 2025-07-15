@@ -1,54 +1,65 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const plans = [
   {
-    name: 'Free',
-    price: '$0',
-    period: '/month',
-    description: 'Perfect for small offices getting started',
+    name: 'Starter',
+    price: '₹0',
+    period: ' (Free Trial)',
+    description: 'For small offices or early-stage startups',
     features: [
-      'Up to 50 visitors/month',
-      'Basic check-in form',
+      '1 location',
+      '50 visitors/month',
+      '10 employees',
+      '1 receptionist',
+      'Basic visitor check-in (manual & kiosk)',
+      'Pre-registration (limited)',
       'Email notifications',
-      'Basic reporting',
-      'Single location',
+      'Standard badge template',
+      '7 or 14-day free trial',
     ],
-    cta: 'Get Started',
+    cta: 'Start Free Trial',
     popular: false,
   },
   {
     name: 'Basic',
-    price: '$29',
+    price: '₹1,999',
     period: '/month',
-    description: 'Ideal for growing businesses',
+    description: 'For small teams and co-working spaces',
     features: [
-      'Up to 500 visitors/month',
-      'Custom check-in forms',
-      'SMS & Email notifications',
-      'Advanced reporting',
-      'Multiple locations',
+      '1 location',
+      '500 visitors/month',
+      'Up to 50 employees',
+      '2 receptionists',
+      'Pre-registration + QR check-in',
+      'SMS + Email notifications (India DLT compliant)',
+      'Visitor photo & signature capture',
+      'Custom visitor fields',
       'Badge printing',
-      'Pre-registration',
+      'Basic reports',
     ],
     cta: 'Start Free Trial',
     popular: false,
   },
   {
     name: 'Professional',
-    price: '$79',
+    price: '₹5,999',
     period: '/month',
-    description: 'For established companies',
+    description: 'For SMBs and IT companies with multiple offices',
     features: [
-      'Up to 2,000 visitors/month',
-      'Everything in Basic',
-      'WhatsApp notifications',
-      'Advanced analytics',
-      'API access',
-      'Custom branding',
-      'Integrations (Slack, Teams)',
-      'Priority support',
+      'Up to 3 locations',
+      '2,000 visitors/month',
+      'Unlimited employees',
+      'Receptionist dashboard',
+      'Pre-approvals (via WhatsApp/Email/SMS)',
+      'Slack/MS Teams notifications',
+      'Google Calendar integration',
+      'Watchlist alerts (internal security)',
+      'Evacuation reports',
+      'Custom badge design',
+      'Advanced reports & exports (CSV, PDF)',
     ],
     cta: 'Start Free Trial',
     popular: true,
@@ -56,21 +67,35 @@ const plans = [
   {
     name: 'Enterprise',
     price: 'Custom',
-    period: '',
-    description: 'For large organizations',
+    period: '(Starts at ₹14,999/month)',
+    description: 'For large corporates, MNCs, tech parks, or secure facilities',
     features: [
-      'Unlimited visitors',
-      'Everything in Professional',
+      'Unlimited locations',
+      'Unlimited visitors/month',
+      'API access & webhooks',
+      'WhatsApp Business integration',
+      'SSO (Google Workspace, Azure AD, Okta)',
+      'Biometric & RFID integrations (on request)',
+      'NDA/digital document capture',
+      'White-labeling options',
       'Dedicated account manager',
-      'Custom integrations',
-      'SSO authentication',
-      'Advanced security features',
-      'SLA guarantee',
-      '24/7 phone support',
+      '24x7 priority support',
+      'Data storage in India (compliance with PDPB)',
+      'Onboarding & training included',
     ],
     cta: 'Contact Sales',
     popular: false,
   },
+];
+
+const addons = [
+  { name: 'Additional 1,000 visitors/month', price: '₹750' },
+  { name: 'Additional kiosk/tablet device', price: '₹500/month' },
+  { name: 'WhatsApp integration', price: '₹1,000/month' },
+  { name: 'SMS Credits (India DLT-compliant)', price: '₹0.12/SMS' },
+  { name: 'On-site setup/training (Metro cities)', price: '₹4,999 one-time' },
+  { name: 'Badge printer rental', price: '₹999/month' },
+  { name: 'NDA/ID Scan Storage (1 year retention)', price: '₹1,000/month/location' },
 ];
 
 export const Pricing = () => {
@@ -127,14 +152,46 @@ export const Pricing = () => {
               </ul>
 
               {/* CTA Button */}
-              <Button
-                variant={plan.popular ? 'default' : 'outline'}
-                className={`w-full ${plan.popular ? 'btn-hero' : ''}`}
-              >
-                {plan.cta}
-              </Button>
+              {plan.name === 'Enterprise' ? (
+                <Link
+                  to="/contact"
+                  className={`w-full ${plan.popular ? 'btn-hero' : 'btn-hero-outline'} flex justify-center items-center py-3 rounded-xl font-semibold text-lg transition-all duration-300`}
+                >
+                  {plan.cta}
+                </Link>
+              ) : (
+                <Link
+                  to="/signup"
+                  className={`w-full ${plan.popular ? 'btn-hero' : 'btn-hero-outline'} flex justify-center items-center py-3 rounded-xl font-semibold text-lg transition-all duration-300`}
+                >
+                  {plan.cta}
+                </Link>
+              )}
             </div>
           ))}
+        </div>
+
+        {/* Add-Ons Section */}
+        <div className="max-w-3xl mx-auto mt-16">
+          <h3 className="text-2xl font-bold mb-4 text-center">India-Specific Add-Ons</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left border border-border rounded-lg">
+              <thead>
+                <tr className="bg-muted">
+                  <th className="py-2 px-4 font-semibold">Add-on</th>
+                  <th className="py-2 px-4 font-semibold">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {addons.map((addon, idx) => (
+                  <tr key={idx} className="border-t border-border">
+                    <td className="py-2 px-4">{addon.name}</td>
+                    <td className="py-2 px-4">{addon.price}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* FAQ Note */}

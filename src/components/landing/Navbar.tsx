@@ -20,12 +20,12 @@ export const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
               Features
-            </Link>
-            <Link to="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+            </a>
+            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
               Pricing
-            </Link>
+            </a>
             <Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">
               Login
             </Link>
@@ -46,20 +46,20 @@ export const Navbar = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 space-y-4">
-            <Link
-              to="#features"
+            <a
+              href="#features"
               className="block text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Features
-            </Link>
-            <Link
-              to="#pricing"
+            </a>
+            <a
+              href="#pricing"
               className="block text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Pricing
-            </Link>
+            </a>
             <Link
               to="/login"
               className="block text-muted-foreground hover:text-foreground transition-colors"

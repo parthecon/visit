@@ -10,6 +10,13 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import Contact from "./pages/Contact";
+import KioskIndex from "./pages/KioskIndex";
+import KioskCheckIn from "./pages/KioskCheckIn";
+import KioskCheckOut from "./pages/KioskCheckOut";
+import Profile from './pages/admin/Profile';
+import Settings from './pages/admin/Settings';
+import Billing from './pages/admin/Billing';
 
 const queryClient = new QueryClient();
 
@@ -26,6 +33,8 @@ const App = () => (
               <Landing />
             </LandingLayout>
           } />
+          {/* Contact Page */}
+          <Route path="/contact" element={<Contact />} />
           
           {/* Authentication Routes */}
           <Route path="/login" element={<Login />} />
@@ -38,8 +47,15 @@ const App = () => (
             <Route path="employees" element={<div className="p-6">Employee Management (Coming Soon)</div>} />
             <Route path="workflow" element={<div className="p-6">Workflow Config (Coming Soon)</div>} />
             <Route path="analytics" element={<div className="p-6">Analytics (Coming Soon)</div>} />
-            <Route path="billing" element={<div className="p-6">Billing (Coming Soon)</div>} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="billing" element={<Billing />} />
           </Route>
+          
+          {/* Kiosk Routes */}
+          <Route path="/kiosk" element={<KioskIndex />} />
+          <Route path="/kiosk/checkin" element={<KioskCheckIn />} />
+          <Route path="/kiosk/checkout" element={<KioskCheckOut />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

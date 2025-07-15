@@ -5,7 +5,12 @@ const Company = require('../models/Company');
 // Create a new visitor
 exports.createVisitor = async (req, res) => {
   try {
-    const visitor = await Visitor.create(req.body);
+    const visitorData = {
+      ...req.body,
+      status: 'pending', // Make check-in a request
+      // Do NOT set checkInTime yet
+    };
+    const visitor = await Visitor.create(visitorData);
     res.status(201).json({ status: 'success', data: visitor });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
@@ -68,5 +73,41 @@ exports.deleteVisitor = async (req, res) => {
     res.json({ status: 'success', message: 'Visitor deleted' });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
+// Approve a visitor
+exports.approveVisitor = async (req, res) => {
+  try {
+    const visitor = await Visitor.findByIdAndUpdate(
+      req.params.id,
+      { status: 'checked_in', checkInTime: new Date() },
+      { new: true, runValidators: true }
+    );
+    if (!visitor) {
+      return res.status(404).json({ status: 'error', message: 'Visitor not found' });
+    }
+    res.json({ status: 'success', data: visitor });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
+  }
+};
+
+// Reject a visitor
+exports.rejectVisitor = async (req, res) => {
+  try {
+    const update = { status: 'rejected' };
+    if (req.body.rejectionReason) update.rejectionReason = req.body.rejectionReason;
+    const visitor = await Visitor.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true, runValidators: true }
+    );
+    if (!visitor) {
+      return res.status(404).json({ status: 'error', message: 'Visitor not found' });
+    }
+    res.json({ status: 'success', data: visitor });
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
   }
 }; 

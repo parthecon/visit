@@ -134,6 +134,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @layer components {
   /* Hero Button Styles */
   .btn-hero {

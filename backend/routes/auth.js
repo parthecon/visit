@@ -10,6 +10,7 @@ const {
   resetPassword,
   updatePassword
 } = require('../controllers/auth');
+const cors = require('cors');
 
 const router = express.Router();
 

@@ -10,23 +10,41 @@ import { useToast } from '@/hooks/use-toast';
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  });
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Login successful",
-        description: "Welcome back to Visitify!",
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
       });
-      // Redirect based on user role (demo purposes)
-      navigate('/admin/dashboard');
-    }, 1500);
+      const result = await response.json();
+      if (response.ok) {
+        if (result.data && result.data.token) {
+          localStorage.setItem('token', result.data.token);
+        }
+        toast({ title: 'Login successful', description: 'Welcome back to Visitify!' });
+        navigate('/admin/dashboard');
+      } else {
+        toast({ title: 'Login failed', description: result.message || 'Invalid credentials.' });
+      }
+    } catch (err) {
+      toast({ title: 'Error', description: 'Could not connect to server.' });
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -56,10 +74,13 @@ const Login = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="Enter your email"
                   required
                   className="h-12"
+                  value={form.email}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -68,10 +89,13 @@ const Login = () => {
                 <div className="relative">
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     required
                     className="h-12 pr-12"
+                    value={form.password}
+                    onChange={handleChange}
                   />
                   <button
                     type="button"

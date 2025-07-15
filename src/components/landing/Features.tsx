@@ -7,6 +7,7 @@ import {
   Shield, 
   Clock 
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const features = [
   {
@@ -79,9 +80,9 @@ export const Features = () => {
             <p className="text-muted-foreground mb-6">
               Join thousands of companies that trust Visitify for their visitor management needs.
             </p>
-            <button className="btn-hero">
+            <Link to="/signup" className="btn-hero">
               Start Your Free Trial
-            </button>
+            </Link>
           </div>
         </div>
       </div>
