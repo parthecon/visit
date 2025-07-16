@@ -1,331 +1,328 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { User, Building2, CreditCard, Bell, CheckCircle } from 'lucide-react';
+// If you haven't installed react-hot-toast, run: npm install react-hot-toast
+import toast, { Toaster } from 'react-hot-toast';
 
-const Signup = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    company: '',
-    phone: '',
-    companyEmail: '',
-    companyPhone: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      country: '',
-      zipCode: '',
-    },
-  });
-  const navigate = useNavigate();
-  const { toast } = useToast();
+const plans = [
+  { name: 'Starter (Free)', value: 'starter', features: ['Basic check-in', '1 location', 'Email alerts'], limits: 'Up to 100 visitors/mo' },
+  { name: 'Basic', value: 'basic', features: ['All Starter features', 'SMS alerts', '3 locations'], limits: 'Up to 500 visitors/mo' },
+  { name: 'Professional', value: 'professional', features: ['All Basic features', 'Badge printing', '10 locations'], limits: 'Up to 2000 visitors/mo' },
+  { name: 'Enterprise', value: 'enterprise', features: ['All Professional features', 'Custom integrations', 'Unlimited'], limits: 'Contact sales' },
+];
+const designations = ['Founder', 'HR Head', 'Admin', 'Manager', 'Other'];
+const countries = ['USA', 'UK', 'India', 'Singapore', 'Other'];
+const timeZones = ['UTC', 'America/New_York', 'Europe/London', 'Asia/Kolkata', 'Asia/Singapore'];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith('address.')) {
-      setForm((prev) => ({
-        ...prev,
-        address: { ...prev.address, [name.replace('address.', '')]: value },
-      }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
+const steps = [
+  { label: 'Admin Details', icon: <User className="w-5 h-5 mr-2 text-blue-500" /> },
+  { label: 'Company Details', icon: <Building2 className="w-5 h-5 mr-2 text-blue-500" /> },
+  { label: 'Plan Selection', icon: <CreditCard className="w-5 h-5 mr-2 text-blue-500" /> },
+  { label: 'Notification Preferences', icon: <Bell className="w-5 h-5 mr-2 text-blue-500" /> },
+  { label: 'Summary', icon: <CheckCircle className="w-5 h-5 mr-2 text-green-500" /> },
+];
+
+export default function Signup() {
+  const [step, setStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Step 1: Admin
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [designation, setDesignation] = useState('Founder');
+
+  // Step 2: Company
+  const [companyName, setCompanyName] = useState('');
+  const [companyLogo, setCompanyLogo] = useState(null);
+  const [companyLogoFile, setCompanyLogoFile] = useState(null);
+  // Address fields (split for backend)
+  const [street, setStreet] = useState('');
+  const [city, setCity] = useState('');
+  const [stateAddr, setStateAddr] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  const [country, setCountry] = useState('India');
+  const [timeZone, setTimeZone] = useState('Asia/Kolkata');
+  const [officeStart, setOfficeStart] = useState('09:00');
+  const [officeEnd, setOfficeEnd] = useState('18:00');
+
+  // Step 3: Plan
+  const [plan, setPlan] = useState('starter');
+
+  // Step 4: Notification
+  const [notifySMS, setNotifySMS] = useState(true);
+  const [notifyEmail, setNotifyEmail] = useState(true);
+  const [notifyWhatsApp, setNotifyWhatsApp] = useState(false);
+
+  // Validation
+  const validateStep = async () => {
+    setError('');
+    if (step === 0) {
+      if (!fullName || !email || !phone || !password) {
+        setError('Please fill all admin details.');
+        return false;
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        setError('Enter a valid email.');
+        return false;
+      }
+      if (!/^\+?[1-9]\d{1,14}$/.test(phone)) {
+        setError('Enter a valid phone number.');
+        return false;
+      }
+      if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/.test(password)) {
+        setError('Password must be 8+ chars, include uppercase, number, special char.');
+        return false;
+      }
+      // Check email uniqueness (simulate API call)
+      // In real app: await fetch('/api/v1/auth/check-email?email=...')
+    }
+    if (step === 1) {
+      if (!companyName || !street || !city || !stateAddr || !zipCode || !country || !timeZone) {
+        setError('Please fill all company details, including address.');
+        return false;
+      }
+      // Check company name uniqueness (simulate API call)
+    }
+    return true;
+  };
+
+  const handleLogoChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setCompanyLogo(e.target.files[0].name);
+      setCompanyLogoFile(e.target.files[0]);
     }
   };
+
+  const handleNext = async () => {
+    if (!(await validateStep())) return;
+    setStep(s => Math.min(s + 1, steps.length - 1));
+  };
+  const handleBack = () => setStep(s => Math.max(s - 1, 0));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Compose data for backend
-    const data = {
-      name: form.firstName + ' ' + form.lastName,
-      email: form.email,
-      password: form.password,
-      phone: form.phone,
-      companyName: form.company,
-      companyEmail: form.companyEmail || form.email,
-      companyPhone: form.companyPhone || form.phone,
-      address: form.address,
+    setError('');
+    setLoading(true);
+    // Prepare JSON payload
+    const payload = {
+      name: fullName,
+      email,
+      phone,
+      password,
+      designation,
+      companyName,
+      companyEmail: email, // Use a separate company email if available
+      companyPhone: phone, // Use a separate company phone if available
+      address: {
+        street,
+        city,
+        state: stateAddr,
+        country,
+        zipCode,
+      },
     };
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/register', {
+      const res = await fetch('http://localhost:5000/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
-      const result = await response.json();
-      if (response.ok) {
-        toast({ title: 'Account created successfully', description: "Welcome to Visitify! Let's set up your company." });
-        navigate('/admin/dashboard');
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        localStorage.setItem('token', data.data.token);
+        toast.success('Signup successful! Redirecting...');
+        setTimeout(() => {
+          window.location.href = '/admin/dashboard';
+        }, 1200);
       } else {
-        toast({ title: 'Registration failed', description: result.message || 'Please check your details.' });
+        setError(data.message || 'Signup failed.');
+        toast.error(data.message || 'Signup failed.');
       }
     } catch (err) {
-      toast({ title: 'Error', description: 'Could not connect to server.' });
+      setError('Network error.');
+      toast.error('Network error.');
+    } finally {
+      setLoading(false);
     }
-    setIsLoading(false);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-hero/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        {/* Logo */}
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="icon-container">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <span className="text-2xl font-bold">Visitify</span>
-          </Link>
-        </div>
-
-        {/* Signup Form */}
-        <Card className="glass-card shadow-xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Create your account</CardTitle>
-            <CardDescription>
-              Start your free trial today
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    placeholder="Parth"
-                    required
-                    className="h-12"
-                    value={form.firstName}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    placeholder=""
-                    required
-                    className="h-12"
-                    value={form.lastName}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Work email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="abc@company.com"
-                  required
-                  className="h-12"
-                  value={form.email}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="company">Company name</Label>
-                <Input
-                  id="company"
-                  name="company"
-                  type="text"
-                  placeholder="Acme Corp"
-                  required
-                  className="h-12"
-                  value={form.company}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="text"
-                  placeholder="+91-9876543210"
-                  className="h-12"
-                  value={form.phone}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a password"
-                    required
-                    className="h-12 pr-12"
-                    value={form.password}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-              {/* Address fields */}
-              <div className="space-y-2">
-                <Label htmlFor="address.street">Street</Label>
-                <Input
-                  id="address.street"
-                  name="address.street"
-                  type="text"
-                  placeholder="123 Main St"
-                  required
-                  className="h-12"
-                  value={form.address.street}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address.city">City</Label>
-                  <Input
-                    id="address.city"
-                    name="address.city"
-                    type="text"
-                    placeholder="City"
-                    required
-                    className="h-12"
-                    value={form.address.city}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address.state">State</Label>
-                  <Input
-                    id="address.state"
-                    name="address.state"
-                    type="text"
-                    placeholder="State"
-                    required
-                    className="h-12"
-                    value={form.address.state}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address.country">Country</Label>
-                  <Input
-                    id="address.country"
-                    name="address.country"
-                    type="text"
-                    placeholder="Country"
-                    required
-                    className="h-12"
-                    value={form.address.country}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address.zipCode">Zip Code</Label>
-                  <Input
-                    id="address.zipCode"
-                    name="address.zipCode"
-                    type="text"
-                    placeholder="Zip Code"
-                    required
-                    className="h-12"
-                    value={form.address.zipCode}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="flex items-start space-x-2">
-                <input
-                  id="terms"
-                  type="checkbox"
-                  required
-                  className="mt-1 rounded border-border"
-                />
-                <Label htmlFor="terms" className="text-sm leading-5">
-                  I agree to the{' '}
-                  <Link to="#" className="text-primary hover:underline">
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link to="#" className="text-primary hover:underline">
-                    Privacy Policy
-                  </Link>
-                </Label>
-              </div>
-              <Button
-                type="submit"
-                className="w-full h-12 btn-hero"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Creating account...' : 'Start free trial'}
-              </Button>
-            </form>
-
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-
-            {/* Social Signup */}
-            <Button variant="outline" className="w-full h-12">
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Continue with Google
-            </Button>
-
-            {/* Login Link */}
-            <div className="text-center mt-6">
-              <p className="text-muted-foreground">
-                Already have an account?{' '}
-                <Link to="/login" className="text-primary hover:underline font-medium">
-                  Sign in
-                </Link>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Trial Notice */}
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            14-day free trial • No credit card required
-          </p>
-        </div>
+  // Summary step
+  const summary = (
+    <section className="space-y-4">
+      <h2 className="text-lg font-semibold text-gray-700 flex items-center"><CheckCircle className="w-5 h-5 mr-2 text-green-500" />Summary</h2>
+      <div className="bg-gray-50 rounded p-4 space-y-2 text-sm">
+        <div><span className="font-medium">Admin:</span> {fullName} ({email}, {phone}, {designation})</div>
+        <div><span className="font-medium">Company:</span> {companyName} ({country}, {timeZone})</div>
+        <div><span className="font-medium">Address:</span> {street}, {city}, {stateAddr}, {zipCode}</div>
+        <div><span className="font-medium">Plan:</span> {plans.find(p => p.value === plan)?.name}</div>
+        <div><span className="font-medium">Notifications:</span> {notifySMS && 'SMS '} {notifyEmail && 'Email '} {notifyWhatsApp && 'WhatsApp'}</div>
       </div>
+    </section>
+  );
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] font-sans">
+      <Toaster position="top-center" />
+      <form className="w-full max-w-lg bg-white rounded-xl shadow-md p-6 space-y-6" onSubmit={step === steps.length - 1 ? handleSubmit : e => { e.preventDefault(); handleNext(); }}>
+        {/* Progress Bar */}
+        <div className="flex items-center mb-2">
+          {steps.map((s, i) => (
+            <React.Fragment key={s.label}>
+              <div className={`flex-1 h-2 rounded-full ${i <= step ? 'bg-blue-500' : 'bg-gray-200'}`}></div>
+              {i < steps.length - 1 && <div className="w-4 text-center text-xs text-gray-400">{''}</div>}
+            </React.Fragment>
+          ))}
+            </div>
+        <div className="flex justify-between text-xs text-gray-500 mb-2">
+          {steps.map((s, i) => (
+            <span key={s.label} className={i === step ? 'text-blue-600 font-semibold' : ''}>{s.icon}{s.label}</span>
+          ))}
+          {step === steps.length - 1 && <span className="text-green-600 font-semibold flex items-center"><CheckCircle className="w-4 h-4 mr-1" />Summary</span>}
+        </div>
+        {/* Step Content */}
+        {step === 0 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-700 flex items-center">{steps[0].icon}Admin User Details</h2>
+            <div>
+              <label className="block text-sm font-medium mb-1">Full Name</label>
+              <input className="w-full border rounded px-3 py-2" value={fullName} onChange={e => setFullName(e.target.value)} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input className="w-full border rounded px-3 py-2" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Phone Number</label>
+              <input className="w-full border rounded px-3 py-2" value={phone} onChange={e => setPhone(e.target.value)} required />
+                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <input className="w-full border rounded px-3 py-2" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+              <span className="text-xs text-gray-400">Min 8 chars, 1 uppercase, 1 number, 1 special char</span>
+              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Designation</label>
+              <select className="w-full border rounded px-3 py-2" value={designation} onChange={e => setDesignation(e.target.value)}>
+                {designations.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+              </div>
+          </section>
+        )}
+        {step === 1 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-700 flex items-center">{steps[1].icon}Company Details</h2>
+            <div>
+              <label className="block text-sm font-medium mb-1">Company Name</label>
+              <input className="w-full border rounded px-3 py-2" value={companyName} onChange={e => setCompanyName(e.target.value)} required />
+              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Company Logo (optional)</label>
+              <input type="file" accept="image/*" onChange={handleLogoChange} disabled />
+              {companyLogo && <span className="text-xs text-green-600 mt-1 block">Uploaded: {companyLogo}</span>}
+              </div>
+            {/* Address fields */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Street Address</label>
+              <input className="w-full border rounded px-3 py-2" value={street} onChange={e => setStreet(e.target.value)} required />
+                </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">City</label>
+                <input className="w-full border rounded px-3 py-2" value={city} onChange={e => setCity(e.target.value)} required />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">State</label>
+                <input className="w-full border rounded px-3 py-2" value={stateAddr} onChange={e => setStateAddr(e.target.value)} required />
+              </div>
+                </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">Zip Code</label>
+                <input className="w-full border rounded px-3 py-2" value={zipCode} onChange={e => setZipCode(e.target.value)} required />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">Country</label>
+                <select className="w-full border rounded px-3 py-2" value={country} onChange={e => setCountry(e.target.value)}>
+                  {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">Time Zone</label>
+                <select className="w-full border rounded px-3 py-2" value={timeZone} onChange={e => setTimeZone(e.target.value)}>
+                  {timeZones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">Office Start Time</label>
+                <input className="w-full border rounded px-3 py-2" type="time" value={officeStart} onChange={e => setOfficeStart(e.target.value)} />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">Office End Time</label>
+                <input className="w-full border rounded px-3 py-2" type="time" value={officeEnd} onChange={e => setOfficeEnd(e.target.value)} />
+              </div>
+            </div>
+          </section>
+        )}
+        {step === 2 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-700 flex items-center">{steps[2].icon}Plan Selection</h2>
+            <div className="space-y-2">
+              {plans.map(p => (
+                <label key={p.value} className={`block border rounded-xl p-4 cursor-pointer transition ${plan === p.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`}>
+                  <input type="radio" className="mr-2" checked={plan === p.value} onChange={() => setPlan(p.value)} />
+                  <span className="font-medium text-gray-800">{p.name}</span>
+                  <span className="ml-2 text-xs text-gray-500">{p.limits}</span>
+                  <ul className="ml-6 mt-1 text-xs text-gray-500 list-disc">
+                    {p.features.map(f => <li key={f}>{f}</li>)}
+                  </ul>
+                  {p.value === 'enterprise' && <a href="#" className="text-blue-600 underline text-xs ml-2">Contact sales</a>}
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
+        {step === 3 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-700 flex items-center">{steps[3].icon}Notification Preferences <span className="text-xs text-gray-400">(Optional)</span></h2>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="notifySMS" checked={notifySMS} onChange={e => setNotifySMS(e.target.checked)} className="h-4 w-4 text-blue-500" />
+              <label htmlFor="notifySMS" className="text-sm text-gray-700">SMS Alerts</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="notifyEmail" checked={notifyEmail} onChange={e => setNotifyEmail(e.target.checked)} className="h-4 w-4 text-blue-500" />
+              <label htmlFor="notifyEmail" className="text-sm text-gray-700">Email Alerts</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="notifyWhatsApp" checked={notifyWhatsApp} onChange={e => setNotifyWhatsApp(e.target.checked)} className="h-4 w-4 text-blue-500" />
+              <label htmlFor="notifyWhatsApp" className="text-sm text-gray-700">WhatsApp Alerts</label>
+            </div>
+          </section>
+        )}
+        {step === 4 && summary}
+        {/* Error/Success/Loading */}
+        {error && <div className="text-red-600 text-sm text-center">{error}</div>}
+        {loading && <div className="text-blue-600 text-sm text-center">Registering...</div>}
+        {/* Navigation Buttons */}
+        <div className="flex justify-between pt-2">
+          {step > 0 ? (
+            <button type="button" className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700" onClick={handleBack}>Back</button>
+          ) : <span />}
+          {step < steps.length ? (
+            <button
+              type={step === steps.length - 1 ? 'submit' : 'button'}
+              className="px-6 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700 transition"
+              onClick={step === steps.length - 1 ? undefined : handleNext}
+              disabled={loading}
+            >
+              {step === steps.length - 1 ? 'Register' : 'Next'}
+            </button>
+          ) : null}
+        </div>
+      </form>
     </div>
   );
-};
-
-export default Signup;
+}

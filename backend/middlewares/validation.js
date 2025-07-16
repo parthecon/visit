@@ -30,6 +30,7 @@ const schemas = {
     email: Joi.string().email().required().lowercase(),
     password: Joi.string().min(6).required(),
     phone: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional(),
+    designation: Joi.string().max(100).optional(), // <-- allow designation
     companyName: Joi.string().required().max(200).trim(),
     companyEmail: Joi.string().email().required().lowercase(),
     companyPhone: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).required(),

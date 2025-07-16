@@ -38,6 +38,7 @@ exports.register = async (req, res) => {
       email,
       password,
       phone,
+      designation: req.body.designation, // Save designation if provided
       role: 'company_admin',
       companyId: company._id
     });

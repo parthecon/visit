@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, UserCheck, Clock, AlertTriangle, TrendingUp, Calendar, BarChart3, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Visitor {
   _id: string;
@@ -17,6 +18,7 @@ interface Visitor {
 }
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<{
     _id?: string;
     name?: string;
@@ -77,7 +79,12 @@ const AdminDashboard = () => {
   const today = new Date().toISOString().slice(0, 10);
   const todaysVisitors = visitors.filter(v => v.checkInTime && v.checkInTime.startsWith(today));
   const checkedIn = todaysVisitors.filter(v => v.status === 'checked_in');
-  const pending = todaysVisitors.filter(v => v.status === 'pending' || v.status === 'scheduled');
+  // PATCH: Show all pending, not just today's
+  const pending = visitors.filter(v => v.status === 'pending' || v.status === 'scheduled');
+
+  // Debug logs
+  console.log('All visitors:', visitors);
+  console.log('Pending (all):', pending);
 
   // Pending requests for this admin as host (robust matching)
   const myPending = visitors.filter(v => {
@@ -89,6 +96,7 @@ const AdminDashboard = () => {
     }
     return v.hostId === user._id;
   });
+  console.log('My pending:', myPending);
 
   // Calculate average wait time for today's checked-in visitors
   const checkedInToday = todaysVisitors.filter(v => v.status === 'checked_in' && v.checkInTime && v.createdAt);
@@ -209,10 +217,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '...' : pending.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {/* Placeholder for attention */}
-              &nbsp;
-            </p>
+            <p className="text-xs text-muted-foreground">&nbsp;</p>
           </CardContent>
         </Card>
       </div>
@@ -273,7 +278,11 @@ const AdminDashboard = () => {
                       </div>
                       <div>
                         <p className="font-medium">{visitor.name}</p>
-                        <p className="text-sm text-muted-foreground">Visiting {typeof visitor.hostId === 'object' ? visitor.hostId.name : visitor.hostId}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Visiting {typeof visitor.hostId === 'object' && visitor.hostId !== null
+                            ? (visitor.hostId.name || '—')
+                            : (typeof visitor.hostId === 'string' ? visitor.hostId : '—')}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -286,7 +295,7 @@ const AdminDashboard = () => {
                 ))}
               </div>
             )}
-            <Button variant="outline" className="w-full mt-4">
+            <Button className="btn-hero w-full mt-4" onClick={() => navigate('/admin/visitors')}>
               View All Visitors
             </Button>
           </CardContent>
@@ -348,7 +357,7 @@ const AdminDashboard = () => {
               <Users className="w-6 h-6" />
               <span>Add Employee</span>
             </Button>
-            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline">
+            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline" onClick={() => navigate('/kiosk')}>
               <UserCheck className="w-6 h-6" />
               <span>Register Visitor</span>
             </Button>
@@ -359,19 +368,6 @@ const AdminDashboard = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Logout Button */}
-      <Button
-        variant="ghost"
-        className="w-full justify-start text-muted-foreground"
-        onClick={() => {
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-        }}
-      >
-        <LogOut className="w-4 h-4 mr-2" />
-        Logout
-      </Button>
     </div>
   );
 };

@@ -1,4 +1,11 @@
 import { useEffect, useState } from "react";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface Host {
   _id: string;
@@ -34,23 +41,27 @@ export default function HostDropdown({ value, onChange }: { value: string; onCha
     fetchHosts();
   }, []);
 
-  if (loading) return <div className="input">Loading hosts...</div>;
-  if (error) return <div className="input text-red-600">{error}</div>;
+  if (loading)
+    return (
+      <div className="input w-full px-4 py-3 rounded-lg border border-border text-lg">Loading hosts...</div>
+    );
+  if (error)
+    return (
+      <div className="input w-full px-4 py-3 rounded-lg border border-border text-lg text-red-600">{error}</div>
+    );
 
   return (
-    <select
-      name="host"
-      required
-      className="input"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-    >
-      <option value="">Select Host</option>
-      {hosts.map(host => (
-        <option key={host._id} value={host._id}>
-          {host.name} ({host.role.replace("company_admin", "Admin")})
-        </option>
-      ))}
-    </select>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary text-lg input bg-white">
+        <SelectValue placeholder="Select Host" />
+      </SelectTrigger>
+      <SelectContent className="rounded-lg border border-border bg-white shadow-lg text-lg">
+        {hosts.map((host) => (
+          <SelectItem key={host._id} value={host._id} className="text-base">
+            {host.name} ({host.role.replace("company_admin", "Admin")})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 } 

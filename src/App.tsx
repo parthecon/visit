@@ -17,6 +17,8 @@ import KioskCheckOut from "./pages/KioskCheckOut";
 import Profile from './pages/admin/Profile';
 import Settings from './pages/admin/Settings';
 import Billing from './pages/admin/Billing';
+import Visitors from "./pages/admin/Visitors";
+import CompanySettings from './pages/admin/CompanySettings';
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,7 @@ const App = () => (
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="company-settings" element={<CompanySettings />} />
             <Route path="company" element={<div className="p-6">Company Settings (Coming Soon)</div>} />
             <Route path="employees" element={<div className="p-6">Employee Management (Coming Soon)</div>} />
             <Route path="workflow" element={<div className="p-6">Workflow Config (Coming Soon)</div>} />
@@ -50,6 +53,7 @@ const App = () => (
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
             <Route path="billing" element={<Billing />} />
+            <Route path="visitors" element={<Visitors />} />
           </Route>
           
           {/* Kiosk Routes */}

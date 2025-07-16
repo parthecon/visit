@@ -6,6 +6,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/database');
 const errorHandler = require('./middlewares/errorHandler');
+const companyRoutes = require('./routes/company');
 
 // Load environment variables
 dotenv.config();
@@ -64,6 +65,7 @@ app.use('/api/v1/employee', require('./routes/employee'));
 app.use('/api/v1/visitor', require('./routes/visitor'));
 app.use('/api/v1/analytics', require('./routes/analytics'));
 app.use('/api/v1/billing', require('./routes/billing'));
+app.use('/api/v1/company', companyRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

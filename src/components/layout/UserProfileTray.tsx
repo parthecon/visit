@@ -90,7 +90,7 @@ export const UserProfileTray: React.FC<UserProfileTrayProps> = ({ user, onLogout
                     <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50" size="sm" onClick={() => { navigate('/admin/profile'); close(); }}>
                       <UserCog className="w-4 h-4 mr-2 text-blue-500" /> View Profile
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50" size="sm" onClick={() => { navigate('/admin/settings'); close(); }}>
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50" size="sm" onClick={() => { navigate('/admin/company-settings'); close(); }}>
                       <Settings className="w-4 h-4 mr-2 text-blue-500" /> Settings
                     </Button>
                     <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50" size="sm" onClick={() => { navigate('/admin/billing'); close(); }}>

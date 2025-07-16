@@ -110,4 +110,31 @@ exports.rejectVisitor = async (req, res) => {
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
   }
+};
+
+// Visitor checkout
+exports.checkoutVisitor = async (req, res) => {
+  try {
+    const { phoneOrEmail } = req.body;
+    if (!phoneOrEmail) {
+      return res.status(400).json({ status: 'error', message: 'Phone or email is required' });
+    }
+    // Find visitor who is currently checked in or approved
+    const visitor = await Visitor.findOne({
+      $or: [
+        { phone: phoneOrEmail },
+        { email: phoneOrEmail }
+      ],
+      status: { $in: ['checked_in', 'approved'] }
+    });
+    if (!visitor) {
+      return res.status(404).json({ status: 'error', message: 'No checked-in visitor found with this phone or email' });
+    }
+    visitor.status = 'checked_out';
+    visitor.checkOutTime = new Date();
+    await visitor.save();
+    res.json({ status: 'success', message: 'Checked out successfully', data: visitor });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
 }; 

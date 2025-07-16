@@ -1,26 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Users, 
-  Settings, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  Settings,
+  BarChart3,
   CreditCard,
   Bell,
   User,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Menu as MenuIcon,
+  X as CloseIcon
 } from 'lucide-react';
 import UserProfileTray from './UserProfileTray';
 import NotificationPopover from './NotificationPopover';
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard' },
-  { icon: Building2, label: 'Company Settings', href: '/admin/company' },
+  { icon: Building2, label: 'Company Settings', href: '/admin/company-settings' },
   { icon: Users, label: 'Employee Management', href: '/admin/employees' },
-  { icon: Settings, label: 'Workflow Config', href: '/admin/workflow' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
   { icon: CreditCard, label: 'Billing', href: '/admin/billing' },
 ];
@@ -28,7 +29,7 @@ const sidebarItems = [
 export const AdminLayout = () => {
   const location = useLocation();
   const [user, setUser] = useState<{ name?: string; email?: string; phone?: string; role?: string; _id?: string; company?: any }>({});
-  // Remove profileOpen state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,20 +52,40 @@ export const AdminLayout = () => {
     fetchUser();
   }, []);
 
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-card border-r border-border flex flex-col">
+    <div className="min-h-screen bg-background">
+      {/* Sidebar Overlay and Drawer */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden={!sidebarOpen}
+      />
+      <div
+        className={`fixed z-50 top-0 left-0 h-screen w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ minHeight: '100vh' }}
+      >
         {/* Logo */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-border flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <div className="icon-container">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <span className="text-xl font-bold">Visitify</span>
           </Link>
+          {/* Close button */}
+          <button
+            className="p-2 rounded hover:bg-muted ml-2"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            <CloseIcon className="w-6 h-6" />
+          </button>
         </div>
-
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
           {sidebarItems.map((item) => {
@@ -78,6 +99,7 @@ export const AdminLayout = () => {
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
+                onClick={() => setSidebarOpen(false)}
               >
                 <item.icon className="w-5 h-5" />
                 <span>{item.label}</span>
@@ -85,7 +107,6 @@ export const AdminLayout = () => {
             );
           })}
         </nav>
-
         {/* User Menu */}
         <div className="p-4 border-t border-border">
           <div className="flex items-center space-x-3 mb-4">
@@ -110,13 +131,18 @@ export const AdminLayout = () => {
           </Button>
         </div>
       </div>
-
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
+      <div>
+        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 fixed top-0 left-0 right-0 z-30" style={{height: '4rem'}}>
+          {/* Hamburger always visible */}
+          <button
+            className="p-2 rounded hover:bg-muted mr-2"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar"
+          >
+            <MenuIcon className="w-6 h-6" />
+          </button>
           <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-          
           <div className="flex items-center space-x-4">
             {/* Notifications */}
             <NotificationPopover />
@@ -135,11 +161,10 @@ export const AdminLayout = () => {
             />
           </div>
         </header>
-        {/* Profile Drawer */}
-
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          <Outlet />
+        <main className="pt-16 min-h-screen overflow-auto">
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
