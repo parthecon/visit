@@ -30,7 +30,8 @@ A modern, full-stack visitor management platform for offices, coworking spaces, 
 - **Reusable UI Components**
   - Button, Card, Drawer, Popover, Table, Toast, etc. (shadcn-ui)
 - **Profile & Settings Pages**
-  - Profile, Settings, Billing (scaffolded, ready for content)
+  - Profile, Settings (scaffolded, ready for content)
+  - Billing: Modern, responsive Subscription & Billing page with plan overview, plan comparison, add-ons, payment method, and invoice history. Upgrade flow integrated with Razorpay (dummy/test mode for now).
 
 ### Backend (Node.js + Express + MongoDB)
 - **Multi-tenant architecture** (Company, User, Visitor models)
@@ -38,7 +39,7 @@ A modern, full-stack visitor management platform for offices, coworking spaces, 
 - **Visitor management** (check-in, approval, status updates)
 - **Authentication** (JWT, password hashing, validation)
 - **Notification system** (email/SMS/WhatsApp via Twilio/Nodemailer)
-- **Subscription plans** (default plan, billing endpoints)
+- **Subscription plans** (default plan, billing endpoints, Razorpay integration in progress)
 - **RESTful API** (versioned, organized routes)
 - **Validation, error handling, CORS, security**
 
@@ -51,7 +52,12 @@ A modern, full-stack visitor management platform for offices, coworking spaces, 
 - Kiosk check-in/check-out (UI and backend integration)
 - User profile tray (modern dropdown/drawer, logout, settings, billing, language)
 - Notification popover (minimal, modern, empty state, clear all, view all)
-- Profile, Settings, Billing pages (scaffolded)
+- Profile, Settings pages (scaffolded)
+- **Billing page:**
+  - UI: Modern, card-based, responsive, with plan overview, plan comparison, add-ons, payment method, and invoice history
+  - Backend: Endpoints for plan checkout, invoices, and webhook switched to Razorpay (dummy/test mode)
+  - Upgrade flow: Working end-to-end with Razorpay test plan, redirects to payment page
+  - Next: Wire up real plan IDs, production keys, and webhook event handling
 - Contact form and routing
 - Consistent branding (logo, favicon, color system)
 - Backend: all core models, routes, and controllers for auth, visitor, admin, employee, receptionist, analytics, billing
@@ -62,7 +68,8 @@ A modern, full-stack visitor management platform for offices, coworking spaces, 
 
 ## 🟡 What’s Remaining / In Progress
 - **Notification backend integration** (currently mock data in UI)
-- **Profile, Settings, Billing page content** (UI is scaffolded, needs real data/forms)
+- **Profile, Settings page content** (UI is scaffolded, needs real data/forms)
+- **Billing page:** Razorpay integration in progress, UI and backend flow working in test mode
 - **Analytics, Company, Employee, Workflow, Superadmin pages** (placeholders, not fully implemented)
 - **Advanced reporting, audit logs, and analytics**
 - **File uploads (photos, ID proofs, etc.)**
