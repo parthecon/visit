@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, UserCheck, Clock, AlertTriangle, TrendingUp, Calendar, BarChart3, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { format, subDays, isSameDay } from 'date-fns';
 
 interface Visitor {
   _id: string;
@@ -75,19 +76,26 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Sort visitors by latest check-in/request time first
+  const sortedVisitors = [...visitors].sort((a, b) => {
+    const aTime = a.checkInTime ? new Date(a.checkInTime).getTime() : 0;
+    const bTime = b.checkInTime ? new Date(b.checkInTime).getTime() : 0;
+    return bTime - aTime;
+  });
+
   // Stats
   const today = new Date().toISOString().slice(0, 10);
-  const todaysVisitors = visitors.filter(v => v.checkInTime && v.checkInTime.startsWith(today));
+  const todaysVisitors = sortedVisitors.filter(v => v.checkInTime && v.checkInTime.startsWith(today));
   const checkedIn = todaysVisitors.filter(v => v.status === 'checked_in');
   // PATCH: Show all pending, not just today's
-  const pending = visitors.filter(v => v.status === 'pending' || v.status === 'scheduled');
+  const pending = sortedVisitors.filter(v => v.status === 'pending' || v.status === 'scheduled');
 
   // Debug logs
   console.log('All visitors:', visitors);
   console.log('Pending (all):', pending);
 
   // Pending requests for this admin as host (robust matching)
-  const myPending = visitors.filter(v => {
+  const myPending = sortedVisitors.filter(v => {
     if (v.status !== 'pending') return false;
     if (!user._id) return false;
     // hostId may be an object or string
@@ -157,6 +165,20 @@ const AdminDashboard = () => {
     }
     return <span className={`text-xs px-2 py-1 rounded-full font-semibold ${color}`}>{label}</span>;
   }
+
+  // Calculate weekly trends (last 7 days, Mon-Sun labels)
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const todayDate = new Date();
+  // Get the last 7 days, oldest first
+  const last7Days = Array.from({ length: 7 }, (_, i) => subDays(todayDate, 6 - i));
+  const weeklyCounts = last7Days.map(day => {
+    const count = visitors.filter(v => v.checkInTime && isSameDay(new Date(v.checkInTime), day)).length;
+    return {
+      day: weekDays[day.getDay() === 0 ? 6 : day.getDay() - 1], // JS: 0=Sun, 1=Mon, ...
+      count,
+    };
+  });
+  const maxCount = Math.max(...weeklyCounts.map(d => d.count), 1);
 
   return (
     <div className="p-6 space-y-6">
@@ -268,7 +290,7 @@ const AdminDashboard = () => {
               <div className="text-red-600">{error}</div>
             ) : (
               <div className="space-y-4">
-                {todaysVisitors.concat(visitors.filter(v => v.status === 'rejected')).slice(0, 10).map((visitor, index) => (
+                {todaysVisitors.map((visitor, index) => (
                   <div key={visitor._id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
@@ -301,7 +323,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Weekly Trends (still static) */}
+        {/* Weekly Trends (dynamic) */}
         <Card>
           <CardHeader>
             <CardTitle>Weekly Trends</CardTitle>
@@ -311,31 +333,23 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               {/* Simple bar chart visualization */}
               <div className="grid grid-cols-7 gap-2 h-40">
-                {[
-                  { day: 'Mon', count: 32 },
-                  { day: 'Tue', count: 28 },
-                  { day: 'Wed', count: 45 },
-                  { day: 'Thu', count: 38 },
-                  { day: 'Fri', count: 52 },
-                  { day: 'Sat', count: 12 },
-                  { day: 'Sun', count: 8 },
-                ].map((data, index) => (
+                {weeklyCounts.map((data, index) => (
                   <div key={index} className="flex flex-col items-center justify-end h-full">
-                    <div 
+                    <div
                       className="w-full bg-primary/20 rounded-t"
-                      style={{ height: `${(data.count / 52) * 100}%` }}
+                      style={{ height: `${(data.count / maxCount) * 100}%` }}
                     ></div>
                     <span className="text-xs text-muted-foreground mt-2">{data.day}</span>
                   </div>
                 ))}
               </div>
-              
               <div className="flex items-center justify-between pt-4 border-t">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4 text-success" />
-                  <span className="text-sm text-success">+15% vs last week</span>
+                  {/* Placeholder for trend vs last week, can be improved */}
+                  <span className="text-sm text-success">Weekly trend</span>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => window.location.href = 'http://localhost:8080/admin/analytics'}>
                   <Calendar className="w-4 h-4 mr-2" />
                   View Report
                 </Button>
@@ -353,15 +367,15 @@ const AdminDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline">
+            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline" onClick={() => navigate('/admin/employees')}>
               <Users className="w-6 h-6" />
               <span>Add Employee</span>
             </Button>
-            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline" onClick={() => navigate('/kiosk')}>
+            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline" onClick={() => navigate('/register-visitor')}>
               <UserCheck className="w-6 h-6" />
               <span>Register Visitor</span>
             </Button>
-            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline">
+            <Button className="h-auto p-6 flex flex-col space-y-2" variant="outline" onClick={() => window.location.href = 'http://localhost:8080/admin/analytics'}>
               <BarChart3 className="w-6 h-6" />
               <span>View Analytics</span>
             </Button>

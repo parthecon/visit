@@ -130,37 +130,6 @@ const CompanySchema = new mongoose.Schema({
       default: true
     }
   },
-  integrations: {
-    twilio: {
-      enabled: {
-        type: Boolean,
-        default: false
-      },
-      accountSid: String,
-      authToken: String,
-      phoneNumber: String
-    },
-    email: {
-      enabled: {
-        type: Boolean,
-        default: true
-      },
-      provider: {
-        type: String,
-        enum: ['smtp', 'sendgrid', 'mailgun'],
-        default: 'smtp'
-      },
-      config: mongoose.Schema.Types.Mixed
-    },
-    whatsapp: {
-      enabled: {
-        type: Boolean,
-        default: false
-      },
-      businessAccountId: String,
-      accessToken: String
-    }
-  },
   limits: {
     monthlyVisitors: {
       type: Number,

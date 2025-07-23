@@ -17,40 +17,21 @@ import {
 } from 'lucide-react';
 import UserProfileTray from './UserProfileTray';
 import NotificationPopover from './NotificationPopover';
+import { useAuth } from '@/contexts/AuthContext';
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard' },
   { icon: Building2, label: 'Company Settings', href: '/admin/company-settings' },
   { icon: Users, label: 'Employee Management', href: '/admin/employees' },
+  { icon: Users, label: 'Receptionist Management', href: '/admin/receptionists' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
   { icon: CreditCard, label: 'Billing', href: '/admin/billing' },
 ];
 
 export const AdminLayout = () => {
   const location = useLocation();
-  const [user, setUser] = useState<{ name?: string; email?: string; phone?: string; role?: string; _id?: string; company?: any }>({});
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      try {
-        const res = await fetch('http://localhost:5000/api/v1/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        if (data.status === 'success' && data.data?.user) {
-          setUser(data.data.user);
-        }
-      } catch (err) {
-        // Optionally handle error
-      }
-    };
-    fetchUser();
-  }, []);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -122,7 +103,7 @@ export const AdminLayout = () => {
             variant="ghost"
             className="w-full justify-start text-muted-foreground"
             onClick={() => {
-              localStorage.removeItem('token');
+              logout();
               window.location.href = '/login';
             }}
           >
@@ -149,13 +130,13 @@ export const AdminLayout = () => {
             {/* User Profile Tray */}
             <UserProfileTray
               user={{
-                name: user.name,
-                email: user.email,
-                role: user.role,
+                name: user?.name,
+                email: user?.email,
+                role: user?.role,
                 // photoUrl: user.photoUrl, // if available
               }}
               onLogout={() => {
-                localStorage.removeItem('token');
+                logout();
                 window.location.href = '/login';
               }}
             />

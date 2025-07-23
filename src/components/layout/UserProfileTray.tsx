@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Popover, Transition } from '@headlessui/react';
-import { LogOut, UserCog, Settings, CreditCard, Globe, ChevronDown } from 'lucide-react';
+import { LogOut, UserCog, Settings, CreditCard, ChevronDown, User, X } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -24,14 +24,8 @@ interface UserProfileTrayProps {
   onLogout: () => void;
 }
 
-const LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'hi', label: 'Hindi' },
-];
-
 export const UserProfileTray: React.FC<UserProfileTrayProps> = ({ user, onLogout }) => {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [lang, setLang] = React.useState('en');
   const navigate = useNavigate();
 
   // Helper to close drawer after navigation
@@ -96,18 +90,6 @@ export const UserProfileTray: React.FC<UserProfileTrayProps> = ({ user, onLogout
                     <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50" size="sm" onClick={() => { navigate('/admin/billing'); close(); }}>
                       <CreditCard className="w-4 h-4 mr-2 text-blue-500" /> Subscription / Billing
                     </Button>
-                    <div className="flex items-center space-x-2 px-2 py-1">
-                      <Globe className="w-4 h-4 text-blue-500" />
-                      <select
-                        className="ml-2 text-sm bg-transparent focus:outline-none text-gray-700"
-                        value={lang}
-                        onChange={e => setLang(e.target.value)}
-                      >
-                        {LANGUAGES.map(l => (
-                          <option key={l.code} value={l.code}>{l.label}</option>
-                        ))}
-                      </select>
-                    </div>
                   </div>
                   {/* Bottom Section */}
                   <div className="border-t pt-3 flex flex-col gap-2">
@@ -141,57 +123,100 @@ export const UserProfileTray: React.FC<UserProfileTrayProps> = ({ user, onLogout
           </div>
           <span className="text-gray-800 font-medium text-sm">{user.name?.split(' ')[0] || user.email || 'User'}</span>
         </button>
-        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <DrawerContent className="right-0 left-auto fixed top-0 h-full w-full max-w-xs rounded-none border-l p-0">
-            <DrawerHeader>
-              <DrawerTitle>User Profile</DrawerTitle>
-            </DrawerHeader>
-            <div className="p-4 flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl mb-2">
+        
+        {/* Overlay */}
+        <div
+          className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setDrawerOpen(false)}
+          aria-hidden={!drawerOpen}
+        />
+        
+        {/* Sidebar */}
+        <div
+          className={`fixed z-50 top-0 right-0 h-screen w-64 bg-card border-l border-border flex flex-col transition-transform duration-300 ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          style={{ minHeight: '100vh' }}
+        >
+          {/* Header */}
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-xl font-bold">Profile</span>
+            </div>
+            <button
+              className="p-2 rounded hover:bg-muted"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close sidebar"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          
+          {/* User Info */}
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
                 {user.photoUrl ? (
-                  <img src={user.photoUrl} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
+                  <img src={user.photoUrl} alt="avatar" className="w-10 h-10 rounded-full object-cover" />
                 ) : (
-                  getInitials(user.name, user.email)
+                  <span className="text-primary font-bold text-lg">
+                    {getInitials(user.name, user.email)}
+                  </span>
                 )}
               </div>
-              <div className="text-gray-800 font-semibold text-lg">{user.name || 'User'}</div>
-              <div className="text-gray-500 text-xs">{user.role || 'Admin'}</div>
-              <div className="text-gray-500 text-xs mb-4">{user.email || '-'}</div>
-              <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50 mb-1" size="sm" onClick={() => handleDrawerNav('/admin/profile')}>
-                <UserCog className="w-4 h-4 mr-2 text-blue-500" /> View Profile
-              </Button>
-              <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50 mb-1" size="sm" onClick={() => handleDrawerNav('/admin/settings')}>
-                <Settings className="w-4 h-4 mr-2 text-blue-500" /> Settings
-              </Button>
-              <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-blue-50 mb-1" size="sm" onClick={() => handleDrawerNav('/admin/billing')}>
-                <CreditCard className="w-4 h-4 mr-2 text-blue-500" /> Subscription / Billing
-              </Button>
-              <div className="flex items-center space-x-2 px-2 py-1 w-full">
-                <Globe className="w-4 h-4 text-blue-500" />
-                <select
-                  className="ml-2 text-sm bg-transparent focus:outline-none text-gray-700 flex-1"
-                  value={lang}
-                  onChange={e => setLang(e.target.value)}
-                >
-                  {LANGUAGES.map(l => (
-                    <option key={l.code} value={l.code}>{l.label}</option>
-                  ))}
-                </select>
+              <div className="flex-1">
+                <p className="text-sm font-medium">{user.name || 'User'}</p>
+                <p className="text-xs text-muted-foreground">{user.role || 'Admin'}</p>
+                <p className="text-xs text-muted-foreground">{user.email || '-'}</p>
               </div>
-              <Button
-                variant="destructive"
-                className="w-full justify-center font-semibold mt-4"
-                onClick={onLogout}
-              >
-                <LogOut className="w-4 h-4 mr-2" /> Logout
-              </Button>
-              <div className="text-xs text-gray-400 text-center mt-4">Visitify v1.0</div>
-              <DrawerClose asChild>
-                <Button variant="outline" className="w-full mt-2">Close</Button>
-              </DrawerClose>
             </div>
-          </DrawerContent>
-        </Drawer>
+          </div>
+          
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-2">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted" 
+              size="sm" 
+              onClick={() => handleDrawerNav('/admin/profile')}
+            >
+              <UserCog className="w-4 h-4 mr-2" /> 
+              View Profile
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted" 
+              size="sm" 
+              onClick={() => handleDrawerNav('/admin/company-settings')}
+            >
+              <Settings className="w-4 h-4 mr-2" /> 
+              Settings
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted" 
+              size="sm" 
+              onClick={() => handleDrawerNav('/admin/billing')}
+            >
+              <CreditCard className="w-4 h-4 mr-2" /> 
+              Billing
+            </Button>
+          </nav>
+          
+          {/* Footer */}
+          <div className="p-4 border-t border-border">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-muted-foreground"
+              onClick={onLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+            <div className="text-xs text-muted-foreground text-center mt-2">Visitify v1.0</div>
+          </div>
+        </div>
       </div>
     </>
   );

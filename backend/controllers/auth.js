@@ -117,6 +117,9 @@ exports.login = async (req, res) => {
 
 // Get current logged in user
 exports.getMe = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ status: 'error', message: 'Not authorized' });
+  }
   res.json({
     status: 'success',
     data: {

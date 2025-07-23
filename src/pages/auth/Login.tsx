@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +16,31 @@ const Login = () => {
     password: '',
   });
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { login, isAuthenticated, user, logout } = useAuth();
+  
+  // Always clear session/token on login page mount
+  React.useEffect(() => {
+    logout();
+    // eslint-disable-next-line
+  }, []);
+
+  // Get the intended destination from location state
+  const from = location.state?.from?.pathname;
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'receptionist') {
+        navigate('/receptionist/dashboard');
+      } else if (user.role === 'employee') {
+        navigate('/employee/dashboard');
+      } else {
+        navigate('/admin/dashboard');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,10 +59,10 @@ const Login = () => {
       const result = await response.json();
       if (response.ok) {
         if (result.data && result.data.token) {
-          localStorage.setItem('token', result.data.token);
+          login(result.data.token);
         }
         toast({ title: 'Login successful', description: 'Welcome back to Visitify!' });
-        navigate('/admin/dashboard');
+        // Navigation will be handled by useEffect above
       } else {
         toast({ title: 'Login failed', description: result.message || 'Invalid credentials.' });
       }

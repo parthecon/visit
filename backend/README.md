@@ -7,7 +7,6 @@ A comprehensive backend solution for visitor management with multi-tenancy, role
 - **Multi-tenant Architecture** - Separate companies with isolated data
 - **Role-based Access Control** - Super Admin, Company Admin, Receptionist, Employee, Visitor
 - **Visitor Management** - Check-in/out, pre-registration, approval workflows
-- **Notification System** - Email, SMS, WhatsApp notifications
 - **File Uploads** - Photos, ID proofs, signatures, documents
 - **Analytics & Reporting** - Visit trends, peak hours, approval times
 - **Subscription Management** - Multiple plans with usage limits
@@ -153,7 +152,6 @@ Key models and relationships:
 - **Company** - Tenant companies with settings
 - **Visitor** - Visitor records with check-in/out data
 - **SubscriptionPlan** - Subscription tiers and limits
-- **NotificationLog** - Notification history and status
 - **VisitLog** - Audit trail of all visitor activities
 
 ## 🔔 Notification System

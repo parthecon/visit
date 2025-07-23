@@ -65,20 +65,6 @@ const SubscriptionPlanSchema = new mongoose.Schema({
       type: Boolean,
       default: true
     },
-    notifications: {
-      email: {
-        type: Boolean,
-        default: true
-      },
-      sms: {
-        type: Boolean,
-        default: false
-      },
-      whatsapp: {
-        type: Boolean,
-        default: false
-      }
-    },
     badgePrinting: {
       type: Boolean,
       default: false
@@ -219,9 +205,6 @@ SubscriptionPlanSchema.methods.getFeatureList = function() {
   
   if (this.features.basicCheckin) features.push('Basic Check-in');
   if (this.features.preRegistration) features.push('Pre-registration');
-  if (this.features.notifications.email) features.push('Email Notifications');
-  if (this.features.notifications.sms) features.push('SMS Notifications');
-  if (this.features.notifications.whatsapp) features.push('WhatsApp Notifications');
   if (this.features.badgePrinting) features.push('Badge Printing');
   if (this.features.analytics.basic) features.push('Basic Analytics');
   if (this.features.analytics.advanced) features.push('Advanced Analytics');

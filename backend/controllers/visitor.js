@@ -6,11 +6,20 @@ const Company = require('../models/Company');
 exports.createVisitor = async (req, res) => {
   try {
     const visitorData = {
-      ...req.body,
-      status: 'pending', // Make check-in a request
-      // Do NOT set checkInTime yet
+      ...req.body
     };
+    if (!visitorData.status) {
+      visitorData.status = 'pending';
+    }
     const visitor = await Visitor.create(visitorData);
+    // Fetch host and receptionist
+    const host = visitor.hostId ? await User.findById(visitor.hostId) : null;
+    const receptionist = visitor.receptionistId ? await User.findById(visitor.receptionistId) : null;
+    // Ensure companyId is set from host if not provided
+    if (!visitor.companyId && host && host.companyId) {
+      visitor.companyId = host.companyId;
+      await visitor.save();
+    }
     res.status(201).json({ status: 'success', data: visitor });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });
@@ -87,6 +96,9 @@ exports.approveVisitor = async (req, res) => {
     if (!visitor) {
       return res.status(404).json({ status: 'error', message: 'Visitor not found' });
     }
+    // Fetch receptionist
+    const receptionist = visitor.receptionistId ? await User.findById(visitor.receptionistId) : null;
+    const host = visitor.hostId ? await User.findById(visitor.hostId) : null;
     res.json({ status: 'success', data: visitor });
   } catch (error) {
     res.status(400).json({ status: 'error', message: error.message });

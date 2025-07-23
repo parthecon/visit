@@ -66,6 +66,7 @@ app.use('/api/v1/visitor', require('./routes/visitor'));
 app.use('/api/v1/analytics', require('./routes/analytics'));
 app.use('/api/v1/billing', require('./routes/billing'));
 app.use('/api/v1/company', companyRoutes);
+app.use('/api/v1/notifications', require('./routes/notification'));
 
 // 404 handler
 app.use('*', (req, res) => {

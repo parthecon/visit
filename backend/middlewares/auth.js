@@ -5,86 +5,51 @@ const Company = require('../models/Company');
 // Protect routes - require authentication
 exports.protect = async (req, res, next) => {
   let token;
-
-  // Check for token in Authorization header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
   }
-
-  // Make sure token exists
   if (!token) {
-    return res.status(401).json({
-      status: 'error',
-      message: 'Not authorized to access this route'
-    });
+    return res.status(401).json({ status: 'error', message: 'Not authorized to access this route' });
   }
-
   try {
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Get user from database
-    const user = await User.findById(decoded.id).select('+password');
-    
-    if (!user) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'No user found with this token'
-      });
+    const userDoc = await User.findById(decoded.id).select('+password');
+    if (!userDoc) {
+      return res.status(401).json({ status: 'error', message: 'No user found with this token' });
     }
-
-    // Check if user is active
-    if (!user.isActive) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'User account is deactivated'
-      });
+    if (!userDoc.isActive) {
+      return res.status(401).json({ status: 'error', message: 'User account is deactivated' });
     }
-
-    // If user has a company, check if company is active
+    let user = userDoc.toObject ? userDoc.toObject() : userDoc;
+    if (user.companyId && typeof user.companyId === 'object' && user.companyId._id) {
+      user.companyId = user.companyId._id.toString();
+    } else if (user.companyId) {
+      user.companyId = user.companyId.toString();
+    }
+    req.user = user;
+    // Attach company if needed
+    let companyObj = null;
     if (user.companyId) {
       const company = await Company.findById(user.companyId);
       if (!company || !company.isActive) {
-        return res.status(401).json({
-          status: 'error',
-          message: 'Company account is inactive'
-        });
+        return res.status(401).json({ status: 'error', message: 'Company account is inactive' });
       }
-
-      // Check subscription status
       if (company.subscription.status !== 'active') {
-        return res.status(402).json({
-          status: 'error',
-          message: 'Company subscription is not active'
-        });
+        return res.status(402).json({ status: 'error', message: 'Company subscription is not active' });
       }
-
-      req.company = company;
+      companyObj = company;
     }
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save({ validateBeforeSave: false });
-
-    // Add user to request object
-    req.user = user;
+    req.company = companyObj;
     next();
   } catch (error) {
-    return res.status(401).json({
-      status: 'error',
-      message: 'Not authorized to access this route'
-    });
+    return res.status(401).json({ status: 'error', message: 'Not authorized to access this route' });
   }
 };
 
-// Grant access to specific roles
 exports.authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        status: 'error',
-        message: `User role ${req.user.role} is not authorized to access this route`
-      });
+      return res.status(403).json({ status: 'error', message: `User role ${req.user.role} is not authorized to access this route` });
     }
     next();
   };
@@ -216,7 +181,7 @@ exports.checkLimits = (limitType) => {
 
         return res.status(402).json({
           status: 'error',
-          message: `${limitNames[limitType]} limit exceeded. Please upgrade your plan.`,
+          message: `${limitNames[limitType === 'visitors' ? 'visitors' : limitType]} limit exceeded. Please upgrade your plan.`,
           limit: company.limits[limitType === 'visitors' ? 'monthlyVisitors' : limitType],
           current: company.usage[limitType === 'visitors' ? 'currentMonthVisitors' : 
                            limitType === 'employees' ? 'totalEmployees' : 'storageUsed']

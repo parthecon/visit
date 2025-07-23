@@ -190,20 +190,6 @@ const schemas = {
     }).required(),
     planType: Joi.string().valid('free', 'starter', 'professional', 'enterprise', 'custom').required(),
     trialDays: Joi.number().min(0).optional()
-  }),
-
-  // Notification schemas
-  sendNotification: Joi.object({
-    type: Joi.string().valid(
-      'visitor_checkin', 'visitor_approved', 'visitor_rejected', 'visitor_checkout',
-      'host_notification', 'reminder', 'subscription_alert', 'payment_reminder', 'system_alert'
-    ).required(),
-    channel: Joi.string().valid('email', 'sms', 'whatsapp').required(),
-    recipient: Joi.string().required(),
-    message: Joi.string().required().max(2000),
-    subject: Joi.string().max(200).optional(),
-    priority: Joi.string().valid('low', 'normal', 'high', 'urgent').optional(),
-    scheduledAt: Joi.date().iso().optional()
   })
 };
 

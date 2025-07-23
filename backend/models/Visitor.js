@@ -7,9 +7,19 @@ const VisitorSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Name cannot be more than 100 characters']
   },
+  aadhar: {
+    type: String,
+    required: false,
+    maxlength: [20, 'Aadhar number cannot be more than 20 characters']
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', 'prefer_not_to_say'],
+    required: false
+  },
   email: {
     type: String,
-    required: [true, 'Please provide visitor email'],
+    required: false, // was: [true, 'Please provide visitor email']
     lowercase: true,
     match: [
       /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
@@ -24,7 +34,7 @@ const VisitorSchema = new mongoose.Schema({
   companyId: {
     type: mongoose.Schema.ObjectId,
     ref: 'Company',
-    required: true
+    required: false // was: true
   },
   hostId: {
     type: mongoose.Schema.ObjectId,

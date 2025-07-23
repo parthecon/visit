@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion';
+import { useNavigate } from 'react-router-dom';
 
 interface Visitor {
   _id: string;
@@ -16,6 +17,8 @@ interface Visitor {
   checkInTime?: string;
   checkOutTime?: string;
   status?: string;
+  aadhar?: string;
+  gender?: string;
   [key: string]: any;
 }
 
@@ -45,6 +48,7 @@ export default function Visitors() {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchVisitors() {
@@ -117,11 +121,21 @@ export default function Visitors() {
                   <div><span className="font-medium">Name:</span> {visitor.name}</div>
                   <div><span className="font-medium">Phone:</span> {visitor.phone}</div>
                   <div><span className="font-medium">Email:</span> {visitor.email}</div>
-                  <div><span className="font-medium">Host:</span> {typeof visitor.hostId === 'object' && visitor.hostId !== null ? (visitor.hostId.name || '—') : (typeof visitor.hostId === 'string' ? visitor.hostId : '—')}</div>
+                  <div><span className="font-medium">Host:</span> {typeof visitor.hostId === 'object' && visitor.hostId !== null ? (visitor.hostId.name || '\u2014') : (typeof visitor.hostId === 'string' ? visitor.hostId : '\u2014')}</div>
                   <div><span className="font-medium">Purpose:</span> {visitor.purpose}</div>
+                  <div><span className="font-medium">Aadhar:</span> {visitor.aadhar || '-'}</div>
+                  <div><span className="font-medium">Gender:</span> {visitor.gender || '-'}</div>
                   <div><span className="font-medium">Status:</span> <StatusBadge status={visitor.status} /></div>
-                  <div><span className="font-medium">Check-In Time:</span> {visitor.checkInTime ? new Date(visitor.checkInTime).toLocaleString() : '—'}</div>
-                  <div><span className="font-medium">Check-Out Time:</span> {visitor.checkOutTime ? new Date(visitor.checkOutTime).toLocaleString() : '—'}</div>
+                  <div><span className="font-medium">Check-In Time:</span> {visitor.checkInTime ? new Date(visitor.checkInTime).toLocaleString() : '\u2014'}</div>
+                  <div><span className="font-medium">Check-Out Time:</span> {visitor.checkOutTime ? new Date(visitor.checkOutTime).toLocaleString() : '\u2014'}</div>
+                  <div>
+                    <button
+                      className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                      onClick={() => navigate(`/gate-pass/${visitor._id}`, { state: visitor })}
+                    >
+                      View Gate Pass
+                    </button>
+                  </div>
                 </div>
               </AccordionContent>
             </AccordionItem>

@@ -67,21 +67,7 @@ const UserSchema = new mongoose.Schema({
     default: null
   },
   resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  notificationSettings: {
-    email: {
-      type: Boolean,
-      default: true
-    },
-    sms: {
-      type: Boolean,
-      default: true
-    },
-    whatsapp: {
-      type: Boolean,
-      default: false
-    }
-  }
+  resetPasswordExpire: Date
 }, {
   timestamps: true
 });
@@ -104,15 +90,13 @@ UserSchema.pre('save', async function(next) {
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function() {
   return jwt.sign(
-    { 
+    {
       id: this._id,
       role: this.role,
-      companyId: this.companyId
+      companyId: this.companyId ? this.companyId.toString() : undefined
     },
     process.env.JWT_SECRET,
-    {
-      expiresIn: process.env.JWT_EXPIRE
-    }
+    { expiresIn: process.env.JWT_EXPIRE }
   );
 };
 
